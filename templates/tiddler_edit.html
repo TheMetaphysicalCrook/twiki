@@ -1,0 +1,28 @@
+<h1>{{tiddler.title}}</h1>
+
+<form action="{{ url_for('tiddler_update', title=tiddler.title) }}" method="POST">
+        <label class="label">Title*</label>
+        <p class="control">
+            <input class="input" type="text" name="title" placeholder="The title of the tiddler" required value="{{tiddler.title}}"/>
+        </p>
+        <label class="label">Tags</label>
+        <p class="control">
+            <input class="input" type="text" name="tags" placeholder="List of tags (comma-separated words)" value="{{tiddler.tags}}"/>
+        </p>
+        <label class="label">Date of creation</label>
+        <p class="control">
+            <input class="input" type="date" name="created" placeholder="Date of creation" value="{{tiddler.created}}"/>
+        </p>
+        <label class="label">Date of modification</label>
+        <p class="control">
+            <input class="input" type="date" name="created" placeholder="Date of creation" value="{{tiddler.modified}}" disabled/>
+        </p>
+        <label class="label">Attachments</label>
+        <p class="control">
+            <input class="input" type="text" name="attached" placeholder="List of attached files" value="{{tiddler.attached}}"/>
+        </p>
+
+        <div><a class="button" href="{{ url_for('tiddler_show', title=tiddler.title) }}">Cancel</a>
+        <button class="button is-primary" type="submit">Save changes</button>
+        </div>
+</form>

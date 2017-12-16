@@ -1,0 +1,11 @@
+<h1>{{tiddler.title}}</h1>
+<ul>
+	<li>author: {{tiddler.author}}</li>
+	<li>created: {{tiddler.created}}</li>
+	<li>lang: {{tiddler.lang}}</li>
+	<li>license: {{tiddler.license}}</li>
+	<li>modified: {{tiddler.modified}}</li>
+	<li>tags: {{tiddler.tags}}</li>
+</ul>
+
+<a href="{{ url_for('tiddler_edit', title=tiddler.title)}}">Edit</a>
