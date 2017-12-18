@@ -1,11 +1,33 @@
 <h1>{{tiddler.title}}</h1>
+
+<div>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <h2>Messages</h2>
+    	<ul>
+          {% for message in messages %}
+           <li class="flash">{{ message | safe }}</li>
+          {% endfor %}
+        </ul>
+    {% endif %}
+  {% endwith %}
+</div>
+
+<h2>Detalls</h2>
 <ul>
-	<li>author: {{tiddler.author}}</li>
 	<li>created: {{tiddler.created}}</li>
-	<li>lang: {{tiddler.lang}}</li>
-	<li>license: {{tiddler.license}}</li>
 	<li>modified: {{tiddler.modified}}</li>
 	<li>tags: {{tiddler.tags}}</li>
+	<li>attachments: {{tiddler.attached}}</li>
+	<li>Extra fields:
+		<ul>
+		{% for f in tiddler.fieldset.keys() %}
+			<li>{{f}}: {{tiddler.fieldset[f]}}</li>
+		{% endfor %}
+		</ul>
+	</li>
 </ul>
 
 <a href="{{ url_for('tiddler_edit', title=tiddler.title)}}">Edit</a>
+<a href="{{ url_for('tiddler_list') }}">List</a>
+

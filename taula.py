@@ -38,7 +38,7 @@ class Tiddler(object):
 	modified = None
 	tags = []
 	attached = []
-	fieldset = []
+	fieldset = {}
 	
 
 	def __init__(self, title):
@@ -69,6 +69,20 @@ def tiddlers_list():
 	with open(datafile, 'r') as f:
 		return jsonpickle.decode(f.read())	
 
+def tiddlers_update(tiddler):
+	"""Updates tiddlers list with tiddler.
+	
+	References:
+	[1](https://stackoverflow.com/questions/2582138/finding-and-replacing-elements-in-a-list-python)
+	"""
+	
+	tiddlers = tiddlers_list()	
+	tiddlers = [tiddler if t.title==tiddler.title else t for t in tiddlers]
+		
+	with open(datafile, 'w') as f:
+		f.write(jsonpickle.encode(tiddlers))
+
+
 ## Web application functions
 ### List
 @app.route("/tiddler/list", methods=['GET'])
@@ -86,81 +100,66 @@ def tiddler_show(title):
 	tiddler = tiddler_select(title)
 	
 	if tiddler == None:
-		abort(404)
+		return render_template('error.html', error="Tiddler with this title does not exist")
 	else:
 		return render_template('tiddler_show.html', tiddler=tiddler)
 
 ## Edit tiddler
-@app.route('/tiddler/edit/<title>', methods = ['GET'])
+@app.route('/tiddler/<title>/edit', methods = ['GET'])
 def tiddler_edit(title):
 	"""Edits tiddler"""
 
 	tiddler = tiddler_select(title)
 	
 	if tiddler == None:
-		abort(404)
+		return render_template('error.html', error="Tiddler with this title does not exist")
 	else:
 		return render_template('tiddler_edit.html', tiddler=tiddler)
 
 
 ## Modify tiddler
-@app.route('/tiddler/update/<title>', methods = ['POST'])
+@app.route('/tiddler/<title>/update', methods = ['POST'])
 def tiddler_update(title):
-	"""Update tiddler"""
+	"""Updates tiddler"""
 
-	tiddlers = tiddlers_list()
 	tiddler = tiddler_select(title)
 	
 	if tiddler == None:
-		abort(404)
+		return render_template('error.html', error="Tiddler with this title does not exist")
 	else:
 		# The tiddler actually exists
 		form_title = request.form.get('title')
 		if form_title != tiddler.title:
 			existing_tiddler = tiddler_select(form_title)
 			if existing_tiddler != None:
-				abort(409, "Previous existing tiddler with the same title")
-			else:
-				tiddler.title = form_title
-				tiddler.tags = request.form.get('tags')
-				tiddler.created = request.form.get('created')
-				tiddler.modified = date.today().isoformat()
-				tiddler.attached = request.form.get('attached')
-				#tiddler.fieldset = TODO
-		else:
-			tiddler.title = form_title
-			tiddler.tags = request.form.get('tags')
-			tiddler.created = request.form.get('created')
-			tiddler.modified = date.today().isoformat()
-			tiddler.attached = request.form.get('attached')
-			#tiddler.fieldset = TODO
+				flash("Previous existing tiddler with the same title")
+				return render_template('tiddler_show.html', tiddler=tiddler)
 
-		#gravar al fitxer: # https://stackoverflow.com/questions/2582138/finding-and-replacing-elements-in-a-list-python
-		tiddlers = [tiddler if t.title==title else t for t in tiddlers]
+
+		# In all other cases, update tiddler
+		tiddler.title = form_title
+		tiddler.tags = request.form.get('tags')
+		tiddler.created = request.form.get('created')
+		tiddler.modified = date.today().isoformat()
+		tiddler.attached = request.form.get('attached')
+		# Fieldset
+		#for f in tiddler.fieldset.keys():
+
+		# Adding new field
+		newfield = request.form.get('fieldname')
+		if newfield != None and newfield != "":
+			tiddler.fieldset[newfield] = request.form.get('fieldvalue')
+
+		print(tiddler.fieldset)
+		tiddlers_update(tiddler)
 		
-		with open(datafile, 'w') as f:
-			f.write(jsonpickle.encode(tiddlers))
-
-	return render_template('tiddler_list.html', tiddlers=tiddlers)
+		return redirect(url_for('tiddler_list'))
 
 
 ## Index
 @app.route("/", methods=['GET'])
 def index():		
 	return redirect(url_for('tiddler_list'))
-
-## Errors
-@app.errorhandler(404)
-def error_no_trobat(error):
-	return render_template('error.html', error=error), 404
-
-@app.errorhandler(406)
-def error_conflicte(error):
-	return render_template('error.html', error=error), 406
-
-@app.errorhandler(500)
-def error_intern(error):
-	return render_template('error.html', error=error), 500
 
 
 # Main procedure
